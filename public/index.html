@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>stationH5SDK</title>
+    <style>
+      /* 竖屏 */
+      @media screen and (orientation: portrait) {
+        html {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        body {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        #app {
+          position: absolute;
+          width: 100%;
+        }
+
+        .enterDiv {
+          height: 100%;
+          width: 100%;
+          position: relative;
+          left: 0;
+        }
+      }
+
+      /* 横屏 */
+      @media screen and (orientation: landscape) {
+        html {
+          width: 100%;
+          height: 100%;
+        }
+
+        body {
+          width: 100%;
+          height: 100%;
+        }
+
+        #app {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="station"></div>
+  </body>
+  <script>
+    const sdk = new stationH5SDK();
+    sdk.init({ uuid: '', token: '', stationId: null, mount:'station' });
+    sdk.load();
+  </script>
+</html>
