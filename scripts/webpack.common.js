@@ -11,7 +11,7 @@ module.exports = {
     // 打包后的产物名
     filename: 'station-web-sdk.js',
     // 在全局变量中增加一个libraryStarter变量
-    library: 'stationH5SDK',
+    library: 'StationWebSDK',
     // 打包成umd模块
     libraryTarget: 'umd',
     // libraryExport这个属性需要设置，否则导出后，外层会包有一层default

@@ -1,9 +1,9 @@
 import TCGSDK, { InitConfig } from '@/utils/tcg-sdk';
 import { joystick } from '@/utils/tcg-sdk/plugin';
 import { GameOptions } from '@/types/config';
-const { startGame } = require('@/api/station');
 import device from 'current-device';
 import Bottom from '@/buttons/bottom';
+import StationApi from "@/api/station";
 
 class Game {
   start(options: InitConfig, params: GameOptions, failCallback: any) {
@@ -113,7 +113,7 @@ class Game {
     const that = t;
     console.log(params);
 
-    startGame(
+    StationApi.startGame(
       {
         uuid: params.uuid,
         ticket: params.ticket,

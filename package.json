@@ -1,5 +1,5 @@
 {
-  "name": "station-h5-sdk",
+  "name": "station-web-sdk",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,7 +15,6 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
   "dependencies": {
     "axios": "0.18.1",
     "core-js": "3.6.5",

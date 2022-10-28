@@ -1,11 +1,7 @@
-import TCGSDK, { InitConfig } from '@/utils/tcg-sdk';
 import * as Cookies from 'js-cookie';
 import { GameOptions, InitOptions } from '@/types/config';
-import Api from './api';
+import StationApi from '@/api/station';
 import Game from '@/game';
-
-const { matching, join } = require('@/api/interactive');
-const { check, getStationConfig, getDSServer } = require('@/api/station');
 
 interface ConfigOptions {
   id: string;
@@ -25,13 +21,11 @@ interface InitGameOptions {
  * const sdk = new stationH5SDK();
  * ```
  */
-class stationH5SDK {
+class StationWebSDK {
   constructor() {}
 
   public initOptions?: InitOptions;
-  private initGameOptions?: InitGameOptions;
-  private tcgsdkConfig?: InitConfig;
-  public Api?: Api;
+  public stationApi?: any;
 
   /**
    * init
@@ -41,14 +35,17 @@ class stationH5SDK {
   init(options: InitOptions) {
     let bodyElement = document.body;
     bodyElement.style.margin = '0';
+    bodyElement.style.width = '100%';
+    bodyElement.style.height = '100%';
+    bodyElement.style.overflow = 'hidden';
 
     Cookies.set('cross_sdk_token', options.ticket);
     Cookies.set('cross_sdk_uuid', options.uuid);
     Cookies.set('cross_sdk_station_id', String(options.stationId));
 
     this.initOptions = options;
-
-    this.Api = new Api(this.initOptions);
+    this.stationApi = StationApi
+    StationApi.baseUrl = options.api;
   }
 
   /**
@@ -60,7 +57,7 @@ class stationH5SDK {
       const ticket = this.initOptions?.ticket;
       const uuid = this.initOptions?.uuid;
       const stationId = this.initOptions?.stationId;
-      check({ ticket, uuid, stationid: stationId })
+      StationApi.check({ ticket, uuid, stationid: stationId })
         .then((response: any) => {
           const { data, code, message } = response;
           if (code !== 200) {
@@ -69,7 +66,7 @@ class stationH5SDK {
           if (!data) {
             return reject('没有权限游览该空间站');
           } else {
-            getStationConfig({ ticket, uuid, stationid: stationId, uid: 0 })
+            StationApi.getStationConfig({ ticket, uuid, stationid: stationId, uid: 0 })
               .then((res2: any) => {
                 const { data, code, message } = res2;
                 if (code !== 200) {
@@ -78,7 +75,7 @@ class stationH5SDK {
                 if (!data) {
                   return reject('没有获取到空间配置数据');
                 } else {
-                  getDSServer({ uuid: uuid, ticket: ticket, stationid: stationId })
+                  StationApi.getDSServer({ uuid: uuid, ticket: ticket, stationid: stationId })
                     .then((res3: any) => {
                       console.log(res3);
                       if (res3.code === 200 && res3.data) {
@@ -148,4 +145,4 @@ class stationH5SDK {
   }
 }
 
-export default stationH5SDK;
+export default new StationWebSDK()

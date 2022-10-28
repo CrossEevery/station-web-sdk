@@ -4,6 +4,10 @@ export interface InitOptions extends InitConfig {
   stationId: number;
   uuid: string;
   ticket: string;
+  /**
+   * api 地址
+   */
+  api?: string;
 }
 
 /**

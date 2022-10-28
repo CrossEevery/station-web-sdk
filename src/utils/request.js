@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'https://api.open.crossevery.com', // url = base url + request url
+  // baseURL: 'https://api.open.crossevery.com', // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 1000 * 60 * 10, // request timeout
 });
