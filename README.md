@@ -27,31 +27,31 @@ npm run build
 
 ### 1. 引入方式
 
-    import 方式引入
+import 方式引入
 
-    ```javascript
-    import StationWebSDK from 'station-web-sdk';
-    ```
+```javascript
+import StationWebSDK from 'station-web-sdk';
+```
 
-    或 script 标签引入
+或 script 标签引入
 
-    ```javascript
-    <script type="text/javascript" src="./station-web-sdk.js"></script>
-    ```
+```javascript
+<script type="text/javascript" src="./station-web-sdk.js"></script>
+```
 
 ### 2. 详细用法
 
 - 初始化 SDK
 
-             ```javascript
-             StationWebSDK.init({
-               uuid: '',
-               ticket: '',
-               stationId: 0, // 空间站id
-               mount: 'station', // 加载节点
-               api: '', // api地址
-             });
-             ```
+  ```javascript
+  StationWebSDK.init({
+    uuid: '',
+    ticket: '',
+    stationId: 0, // 空间站id
+    mount: 'station', // 加载节点
+    api: '', // api地址
+  });
+  ```
 
   参数说明：
 
@@ -99,9 +99,9 @@ npm run build
 
   参数说明：
 
-  | 字段名 | 类型     | 说明     |
-  | ------ | -------- | -------- |
-  | ids    | [number] | 宝箱列表 |
+  | 字段名 | 类型     | 说明              |
+  | ------ | -------- | ----------------- |
+  | ids    | [number] | 宝箱列表,值 1-150 |
 
 - 是否打开抽奖机
 
@@ -146,7 +146,7 @@ npm run build
   object 参数说明：
 
   | 字段名    | 类型   | 说明        |
-    | --------- | ------ | ----------- |
+  | --------- | ------ | ----------- |
   | ticket    | string | 用户 ticket |
   | uuid      | string | 用户 uuid   |
   | stationid | number | 空间站 id   |
@@ -154,7 +154,7 @@ npm run build
   返回数据：
 
   | 字段名  |                  | 类型   | 说明          |
-    | ------- | ---------------- | ------ | ------------- |
+  | ------- | ---------------- | ------ | ------------- |
   | code    |                  | number |
   | message |                  | string |
   | data    |                  | array  |
