@@ -3,10 +3,43 @@ import { joystick } from '@/utils/tcg-sdk/plugin';
 import { GameOptions } from '@/types/config';
 import device from 'current-device';
 import Bottom from '@/buttons/bottom';
-import StationApi from "@/api/station";
+import StationApi from '@/api/station';
+import Ue from '@/ue';
+
+enum AssetTypeEnum {
+  TRIGGER = 'CI_PORTAL-TRIGGER-ID', // 传送门
+  BOX = 'CI-BOX-ID', // 宝箱
+  WWJ = 'CI-WWJ-ID', // 娃娃机
+}
+
+enum CallbackTypeEnum {
+  DISCONNECT = 'disconnect', // 失联
+  RECONNECT = 'reconnect', // 重连,
+  SETBOX = 'event-set-box', // 设置宝箱
+  SETUEDATA = 'set-ue-data', // ue返回数据
+  TRIGGER = 'TRIGGER', // 传送门
+  OPENBOX = 'open-box', // 打开宝箱
+  OPENWWJ = 'open-wwj',
+}
 
 class Game {
-  start(options: InitConfig, params: GameOptions, failCallback: any) {
+  private initParams = {};
+  private isConnect: boolean = false;
+  private isReconnect: boolean = false;
+  reconnectCode = 0;
+  private data_comm?: any = null;
+  currentUEData = {};
+  private gateTimeInterval?: any = null;
+  private onCallbackMessage?: any = null;
+  private onConnectSuccess?: any = null;
+  private onComplete = null;
+  private onCallback = null;
+  private onFailCallback = null;
+  public UeMessage?: any;
+
+  start(options: InitConfig, params: GameOptions, failCallback: any, onMessage?: Function) {
+    this.initParams = options;
+    this.onCallbackMessage = onMessage;
     TCGSDK.init({
       ...options,
       onLog: (res) => {
@@ -18,23 +51,25 @@ class Game {
         // if (callback) {
         //   callback();
         // }
+        this.UeMessage = Ue;
 
         // 设置流分辨率，设置鼠标不可锁定
-        // this.isConnect = true;
+        this.isConnect = true;
+        this.reconnectCode = 0;
         TCGSDK.setStreamProfile({ fps: 60, max_bitrate: 10, min_bitrate: 8 });
-        console.log(TCGSDK.getMoveSensitivity());
         TCGSDK.setMoveSensitivity(2.0);
 
-        // if (this.isReconnect) {
-        //   // 重连开启传送门数据通道
-        //   this.TransferData(JSON.stringify(sendReconnectData()));
-        //   if (this.isLock) {
-        //     this.handleCloseWWJ();
-        //   }
-        // } else {
-        //   // 开启传送门数据通道
-        //   this.TransferData('start');
-        // }
+        if (this.isReconnect) {
+          // 重连开启传送门数据通道
+          this.TransferData(this.UeMessage.sendReconnectData());
+        } else {
+          // 开启传送门数据通道
+          this.TransferData('start');
+        }
+
+        if (this.onConnectSuccess) {
+          this.onConnectSuccess(res);
+        }
 
         // 上报用户状态
         // this.initHeart()
@@ -52,34 +87,31 @@ class Game {
 
         // this.initLog();
       },
-      onNetworkChange: (res) => {
-        // if (res.status === 'offline') {
-        //   this.connectMsg = '';
-        //   this.showConnectClose = false;
-        //   this.handleOffline();
+      onConnectFail: (response) => {
+        console.log('onConnectFail: ', response);
+        // if (!response.code || response.code >= 2) {
+        //   this.reconnectCode = 2;
+        //   this.reconnect();
         // }
         //
-        // if (res.status === 'online') {
-        //   this.connectDialogVisible = false;
-        //   this.handleCloseWWJ();
-        //   this.$emit('trans', false);
+        // if (response.code && response.code === -1) {
+        //   this.reconnectCode = 2;
+        //   setTimeout(() => this.reconnect(), 5000);
         // }
-        // this.networkData = res.stats;
       },
       onGameStartComplete: (res) => {
-        // that.gameId = res.app_id;
         this.handleResize();
-        console.log('complete');
 
         if (device.mobile()) {
           // 底部按钮区域
           Bottom.init(true);
-
         }
       },
       // 网络中断/被踢触发此回调
       onDisconnect: (res) => {
-        // this.handleAutoDisconnect(res);
+        if (this.onCallbackMessage) {
+          this.onCallbackMessage({ type: CallbackTypeEnum.DISCONNECT, data: res });
+        }
       },
       onWebrtcStatusChange: (res) => {
         // console.log('onWebrtcStatusChange', res)
@@ -153,7 +185,10 @@ class Game {
   }
 
   handleResize() {
-    console.log('resize');
+    // console.log('resize');
+    let htmlElement = document.getElementsByTagName('html')[0];
+    htmlElement.style.height = '100%';
+    htmlElement.style.overflow = 'hidden';
     // 设置屏幕高度
     const tecentGameContainer = document.getElementById('cloud-gaming-container');
     if (tecentGameContainer) {
@@ -191,6 +226,120 @@ class Game {
       } else {
         videoStreamContainer.style.height = '100%';
       }
+    }
+  }
+
+  async TransferData(msg: string) {
+    if (!this.isConnect) {
+      console.log('未连接画面，无法开启数据通道');
+      // TODO：在这里上报错误日志，云游戏未连接成功
+      return;
+    }
+
+    // 接收云端数据的回调
+    const onMessage = (msg: string) => {
+      try {
+        this.handleUEMsg(msg);
+      } catch (e) {
+        console.log(e);
+      }
+
+      if (this.gateTimeInterval) {
+        setTimeout(() => {
+          if (this.onCallbackMessage) {
+            this.onCallbackMessage({ type: CallbackTypeEnum.SETBOX });
+          }
+        }, 2000);
+
+        try {
+          this.currentUEData = JSON.parse(msg);
+          if (this.onCallbackMessage) {
+            this.onCallbackMessage({ type: CallbackTypeEnum.SETUEDATA, data: this.currentUEData });
+          }
+        } catch (e) {
+          console.log('000', this.currentUEData, e);
+        }
+        clearInterval(this.gateTimeInterval);
+        this.gateTimeInterval = null;
+
+        if (this.isReconnect) {
+          if (this.onCallbackMessage) {
+            this.onCallbackMessage({ type: CallbackTypeEnum.RECONNECT });
+          }
+        }
+      }
+    };
+
+    if (this.data_comm == null) {
+      // 定时重复创建直到成功
+      const result: any = await new Promise((resolve, reject) => {
+        let count = 0;
+        const timer = setInterval(async (_) => {
+          // 创建数据通道
+          const ret = await TCGSDK.createCustomDataChannel({
+            destPort: 18786,
+            onMessage, // destPort: xxxx ，xxxx端口范围为10000～20000
+          });
+
+          count++;
+
+          if (ret.code === 0) {
+            resolve(ret);
+            clearInterval(timer);
+          }
+
+          if (count > 20) {
+            this.isConnect = false;
+            clearInterval(timer);
+          }
+        }, 2000); // 2秒间隔
+      });
+      /*
+       * 判断是否成功
+       * result的结构{code: number, msg: string, sendMessage: Function }
+       */
+      console.log('sendresult=>', result);
+      if (result.code === 0) {
+        console.log('18786:', msg);
+        // 随便发送一个绑定包，使云端应用的UDP服务能获得代理端口
+        result.sendMessage('start');
+        this.gateTimeInterval = setInterval(() => this.getGates(), 2000);
+        this.data_comm = result;
+      }
+    } else {
+      let payload = null;
+      payload = msg;
+      console.log(payload);
+      this.data_comm.sendMessage(payload || 'start');
+    }
+  }
+
+  handleUEMsg(msg: string) {
+    console.log(this.onCallbackMessage, msg);
+    if (msg.includes(AssetTypeEnum.TRIGGER)) {
+      if (this.onCallbackMessage) {
+        this.onCallbackMessage({ type: CallbackTypeEnum.TRIGGER, data: msg });
+      }
+    }
+
+    if (msg.includes(AssetTypeEnum.BOX)) {
+      if (this.onCallbackMessage) {
+        this.onCallbackMessage({ type: CallbackTypeEnum.OPENBOX, data: this.UeMessage.convertBoxData(msg) });
+      }
+    }
+
+    if (msg.includes(AssetTypeEnum.WWJ)) {
+      if (this.onCallbackMessage) {
+        this.onCallbackMessage({ type: CallbackTypeEnum.OPENWWJ, data: this.UeMessage.convertWWJData(msg) });
+      }
+    }
+  }
+
+  async getGates() {
+    if (this.isReconnect) {
+      await this.TransferData(this.UeMessage.sendReconnectData());
+    } else {
+      await this.TransferData('start');
     }
   }
 }

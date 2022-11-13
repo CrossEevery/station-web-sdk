@@ -30,14 +30,6 @@ class StationApi {
     return this.get('/stationpoint/role/self', data);
   }
 
-  public matching(data: Object) {
-    return this.get('/endpoint/matching/match', data);
-  }
-
-  public join(data: Object, params: Object) {
-    return this.post('/endpoint/matching/join', data, params);
-  }
-
   public sendSkill(data: Object) {
     return this.get('/endpoint/character/play', data);
   }
@@ -71,7 +63,7 @@ class StationApi {
   /**
    * 获取空间的广告位数据
    */
-  public getAdList(data: Object) {
+  public getBillboardList(data: Object) {
     return this.get('/stationpoint/player/slot', data);
   }
 

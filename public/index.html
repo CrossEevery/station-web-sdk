@@ -4,35 +4,23 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="text/javascript" src="./station-web-sdk.js"></script>
     <title>StationWebSDK</title>
-    <style>
-      /* 竖屏 */
-      @media screen and (orientation: portrait) {
-        html {
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-        }
-      }
-
-      /* 横屏 */
-      @media screen and (orientation: landscape) {
-        html {
-          width: 100%;
-          height: 100%;
-        }
-
-        body {
-          width: 100%;
-          height: 100%;
-        }
-      }
-    </style>
   </head>
   <body>
     <div id="station"></div>
   </body>
   <script>
-
+    StationWebSDK.init({
+      uuid: '',
+      ticket: '',
+      token: '',
+      stationId: 0,
+      api: '',
+      mount: 'station',
+    });
+    StationWebSDK.load((res) => {
+      console.log(res);
+    });
   </script>
 </html>

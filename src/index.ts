@@ -1,6 +1,7 @@
 import * as Cookies from 'js-cookie';
 import { GameOptions, InitOptions } from '@/types/config';
 import StationApi from '@/api/station';
+import Ue from './ue';
 import Game from '@/game';
 
 interface ConfigOptions {
@@ -14,18 +15,12 @@ interface InitGameOptions {
   port: string;
 }
 
-/**
- * 调用方法如下：
- * ```typescript
- * // We can initialize like this
- * const sdk = new stationH5SDK();
- * ```
- */
 class StationWebSDK {
   constructor() {}
 
   public initOptions?: InitOptions;
   public stationApi?: any;
+  private game?: Game;
 
   /**
    * init
@@ -44,15 +39,15 @@ class StationWebSDK {
     Cookies.set('cross_sdk_station_id', String(options.stationId));
 
     this.initOptions = options;
-    this.stationApi = StationApi
+    this.stationApi = StationApi;
     StationApi.baseUrl = options.api;
   }
 
   /**
    * 加载游戏
-   * @param options
+   * @param onMessage 回调消息
    */
-  load(options?: InitGameOptions) {
+  load(onMessage?: Function) {
     return new Promise((resolve, reject) => {
       const ticket = this.initOptions?.ticket;
       const uuid = this.initOptions?.uuid;
@@ -101,14 +96,14 @@ class StationWebSDK {
                           // shoe: this.selectedCharacter.shoe,
                         };
 
-                        let game = new Game();
-                        game.start(
+                        this.game = new Game();
+                        this.game.start(
                           {
                             appid: 1259104334,
                             mount: 'station',
                             showLoading: false,
                             loadingText: '',
-                            defaultCursorImgUrl: '',
+                            // defaultCursorImgUrl: '',
                             autoRotateContainer: true,
                             mic: false,
                             reconnect: true,
@@ -121,6 +116,7 @@ class StationWebSDK {
                           },
                           params,
                           () => {},
+                          onMessage,
                         );
                       } else {
                       }
@@ -143,6 +139,46 @@ class StationWebSDK {
         });
     });
   }
+
+  /**
+   * 设置广告牌
+   * @param billboards
+   */
+  setBillboards(billboards: [{ slotCode: string; path: string }]) {
+    billboards.forEach((x) => this.game?.TransferData(this.game.UeMessage.sendBillboardData(x)));
+    this.game?.TransferData(this.game?.UeMessage.sendADEndData());
+  }
+
+  /**
+   * 设置宝箱
+   * @param ids 宝箱id列表
+   */
+  setBoxes(ids: [number]) {
+    this.game?.TransferData(this.game?.UeMessage.sendBoxData(ids));
+  }
+
+  /**
+   * 是否可以打开宝箱
+   * @param canOpen 1-可以 0不可以
+   */
+  canOpenBox(canOpen: number = 1) {
+    this.game?.TransferData(this.game.UeMessage.sendCanOpenBox(canOpen));
+  }
+
+  /**
+   * 是否可以打开抽奖机
+   * @param canOpen 1-可以 0不可以
+   */
+  canOpenWWJ(canOpen: number = 1) {
+    this.game?.TransferData(this.game.UeMessage.sendCanOpenWWJ(canOpen));
+  }
+
+  /**
+   * 关闭抽奖机
+   */
+  closeWWJ() {
+    this.game?.TransferData(this.game.UeMessage.closeWWJ());
+  }
 }
 
-export default new StationWebSDK()
+export default new StationWebSDK();
