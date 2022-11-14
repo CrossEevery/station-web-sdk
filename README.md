@@ -55,13 +55,14 @@ import StationWebSDK from 'station-web-sdk';
 
   参数说明：
 
-  | 字段名    | 类型   | 说明         |
-  | --------- | ------ | ------------ |
-  | uuid      | string | 用户 uuid    |
-  | ticket    | string | 用户 ticket  |
-  | stationId | number | 空间站 id    |
-  | mount     | string | 页面加载元素 |
-  | api       | string | 后端接口地址 |
+  | 字段名    | 类型   | 说明           |
+  | --------- | ------ | -------------- |
+  | uuid      | string | 用户 uuid      |
+  | ticket    | string | 用户 ticket    |
+  | stationId | number | 空间站 id      |
+  | mount     | string | 页面加载元素   |
+  | api       | string | 后端接口地址   |
+  | uid       | number | 用户 uid(可选) |
 
 - 加载容器
 

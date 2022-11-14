@@ -52,6 +52,7 @@ class StationWebSDK {
       const ticket = this.initOptions?.ticket;
       const uuid = this.initOptions?.uuid;
       const stationId = this.initOptions?.stationId;
+      const uid = this.initOptions?.uid;
       StationApi.check({ ticket, uuid, stationid: stationId })
         .then((response: any) => {
           const { data, code, message } = response;
@@ -61,7 +62,7 @@ class StationWebSDK {
           if (!data) {
             return reject('没有权限游览该空间站');
           } else {
-            StationApi.getStationConfig({ ticket, uuid, stationid: stationId, uid: 0 })
+            StationApi.getStationConfig({ ticket, uuid, stationid: stationId, uid: uid || 1 })
               .then((res2: any) => {
                 const { data, code, message } = res2;
                 if (code !== 200) {
