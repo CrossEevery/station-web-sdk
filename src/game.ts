@@ -5,6 +5,7 @@ import device from 'current-device';
 import Bottom from '@/buttons/bottom';
 import StationApi from '@/api/station';
 import Ue from '@/ue';
+import * as Cookies from 'js-cookie';
 
 enum AssetTypeEnum {
   TRIGGER = 'CI_PORTAL-TRIGGER-ID', // 传送门
@@ -171,6 +172,7 @@ class Game {
 
       if (code === 200 && data) {
         TCGSDK.start(data.serverSession);
+        Cookies.set('cross_sdk_gameid',data.gameUUID)
         // that.gameUUID = data.gameUUID;
         // that.hostUUID = data.hostUUID;
       } else {
@@ -341,6 +343,11 @@ class Game {
     } else {
       await this.TransferData('start');
     }
+  }
+
+  public async stopGame(params: any) {
+    StationApi.stopGame(params);
+    TCGSDK.destroy();
   }
 }
 

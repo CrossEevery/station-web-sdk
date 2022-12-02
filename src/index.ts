@@ -141,6 +141,10 @@ class StationWebSDK {
     });
   }
 
+  stop() {
+      this.game?.stopGame({ uuid: this.initOptions?.uuid, ticket: this.initOptions?.ticket, gameuuid: Cookies.get("cross_sdk_gameid") || '', hostuuid: '' });
+  }
+
   /**
    * 设置广告牌
    * @param billboards
